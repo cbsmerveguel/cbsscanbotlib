@@ -1,0 +1,69 @@
+_schema-version: "3.2"
+ID: cbsscanbotlib
+description: Scanbot Lib
+version: 0.0.1
+modules:
+- name: cbsscanbotlib-dest-content
+  type: com.sap.application.content
+  requires:
+  - name: cbsscanbotlib-destination-service
+    parameters:
+      content-target: true
+  - name: cbsscanbotlib-repo-host
+    parameters:
+      service-key:
+        name: cbsscanbotlib-repo-host-key
+  - name: cbsscanbotlib-uaa
+    parameters:
+      service-key:
+        name: cbsscanbotlib-uaa-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: cbsscanbotlib_repo_host
+          ServiceInstanceName: cbsscanbotlib-html5-srv
+          ServiceKeyName: cbsscanbotlib-repo-host-key
+          sap.cloud.service: cbsscanbotlib
+        - Authentication: OAuth2UserTokenExchange
+          Name: cbsscanbotlib_uaa
+          ServiceInstanceName: cbsscanbotlib-xsuaa-srv
+          ServiceKeyName: cbsscanbotlib-uaa-key
+          sap.cloud.service: cbsscanbotlib
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
+resources:
+- name: cbsscanbotlib-uaa
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json  
+    service: xsuaa
+    service-name: cbsscanbotlib-xsuaa-srv
+    service-plan: application
+- name: cbsscanbotlib-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      version: 1.0.0
+      init_data:
+        instance:
+          existing_destinations_policy: update
+          destinations:
+          - Name: ui5
+            Type: HTTP
+            URL: https://ui5.sap.com
+            ProxyType: Internet
+            Authentication: NoAuthentication
+    service: destination
+    service-name: cbsscanbotlib-destination-service
+    service-plan: lite
+- name: cbsscanbotlib-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: cbsscanbotlib-html5-srv
+    service-plan: app-host
+parameters:
+  deploy_mode: html5-repo
